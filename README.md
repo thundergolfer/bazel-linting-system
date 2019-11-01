@@ -1,0 +1,1 @@
+# bazel-linting-rules
