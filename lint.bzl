@@ -41,14 +41,13 @@ def _file_count_aspect_impl(target, ctx):
         )
     ]
 
-lint_workspace_aspect = aspect(implementation = _file_count_aspect_impl,
+lint_workspace_aspect = aspect(
+    implementation = _file_count_aspect_impl,
     attr_aspects = ['deps'],
-#    attrs = {
-#        'extension' : attr.string(default = '*'),
-#    }
 )
 
 def _lint_workspace_rule_impl(ctx):
+    print("fuck")
     for dep in ctx.attr.deps:
         print(dep[FileCountInfo].count)
 
