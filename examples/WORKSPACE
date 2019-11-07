@@ -1,0 +1,6 @@
+workspace(name = "examples")
+
+local_repository(
+    name = "bazel_linting_rules",
+    path = "../"
+)
