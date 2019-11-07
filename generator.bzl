@@ -1,5 +1,5 @@
 load("@bazel_skylib//lib:shell.bzl", "shell")
-load("//:rules.bzl", "LinterInfo")
+load("//:rules.bzl", "LinterInfo", "SUPPORTED_LANGUAGES")
 
 
 # Aspects that accept parameters cannot be called on the command line.
@@ -15,8 +15,10 @@ def debug(msg):
 
 def _select_linter(ctx):
     kind = ctx.rule.kind
-    if kind in ["py_library", "py_binary"]:
+    if kind in ["py_library", "py_binary", "py_test"]:
         return ctx.attr._python_linter
+    elif kind in ["go_library", "go_library", "go_test"]:
+        return ctx.attr._golang_linter
     debug("No linter for rule kind: {}".format(kind))
     return None
 
@@ -75,12 +77,20 @@ def linting_aspect_generator(
         name,
         linters,
 ):
+    linters_map = { lang: None for lang in SUPPORTED_LANGUAGES }
+    for l in linters:
+        # TODO(Jonathon): Don't allow double-writing to single language (ie. dupes)
+        linters_map[l.language] = l
+
     return aspect(
         implementation = _lint_workspace_aspect_impl,
         attr_aspects = [],
         attrs = {
             '_python_linter' : attr.label(
-                default = linters[0],
-            )
+                default = linters_map["PYTHON"],
+            ),
+            '_golang_linter' : attr.label(
+                default = linters_map["GOLANG"],
+            ),
         }
     )
