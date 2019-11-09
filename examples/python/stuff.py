@@ -1,0 +1,1 @@
+IMPORT_ME = f"This string came from {__file__}"
