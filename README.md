@@ -1,6 +1,9 @@
 # bazel-linting-rules
 
+This is an experimental project with the goals of providing a simple tool for linting source code within a polyglot Bazel repo
+and learning more about aspects. 
 
+See [`DESIGN.md`](DESIGN.md) for some discussion of the pros/cons of this project. 
 
 ## Usage
 
