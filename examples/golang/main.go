@@ -49,8 +49,8 @@ func main() {
 // These are exported via HTTP as a JSON object at /debug/vars.
 var (
 	hitCount       = expvar.NewInt("hitCount")
-	pollCount      = expvar.NewInt("pollCount")
-	pollError      = expvar.NewString("pollError")
+		pollCount      = expvar.NewInt("pollCount")
+		pollError      = expvar.NewString("pollError")
 	pollErrorCount = expvar.NewInt("pollErrorCount")
 )
 
@@ -70,6 +70,9 @@ type Server struct {
 func NewServer(version, url string, period time.Duration) *Server {
 	s := &Server{version: version, url: url, period: period}
 	go s.poll()
+
+
+
 	return s
 }
 
@@ -111,7 +114,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
 	data := struct {
 		URL     string
-		Version string
+			Version string
 		Yes     bool
 	}{
 		s.url,
