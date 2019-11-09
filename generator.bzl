@@ -27,13 +27,19 @@ def both_or_neither(l, r):
 def _select_linter(ctx):
     kind = ctx.rule.kind
     if kind in ["py_library", "py_binary", "py_test"]:
-        return ctx.attr._python_linter
+        linter = ctx.attr._python_linter
     elif kind in ["go_library", "go_binary", "go_test"]:
-        return ctx.attr._golang_linter
+        linter =  ctx.attr._golang_linter
     elif kind in ["jsonnet_library", "jsonnet_to_json"]:
-        return ctx.attr._jsonnet_linter
-    debug("No linter for rule kind: {}".format(kind))
-    return None
+        linter = ctx.attr._jsonnet_linter
+    else:
+        linter = None
+    if linter != None and linter.label == "@linting_rules//:no-op":
+        linter = None
+
+    if linter == None:
+        debug("No linter for rule kind: {}".format(kind))
+    return linter
 
 
 def _gather_srcs(src_lst):
@@ -62,7 +68,7 @@ def _lint_workspace_aspect_impl(target, ctx):
 
     repo_root = ctx.var["repo_root"]
 
-    out = ctx.actions.declare_file("%s.lint_report" % ctx.rule.attr.name)
+    out = ctx.actions.declare_file("%s.linted" % ctx.rule.attr.name)
 
     src_files = []
     if hasattr(ctx.rule.attr, 'srcs'):
@@ -96,37 +102,43 @@ def _lint_workspace_aspect_impl(target, ctx):
     else:
         configuration = ""
 
-
-    cmd = "{linter_exe} {config} {srcs} > {out}".format(
-        linter_exe = linter_exe,
-        config = configuration,
-        srcs = " ".join([
-            shell.quote("{}/{}".format(repo_root, src_f.path)) for
-            src_f in src_files
-        ]),
+    copy_cmd = "cp {src} {out}".format(
+        src = shell.quote(src_files[0].path),
         out = shell.quote(out.path),
     )
-    debug("Running: \"{}\"".format(cmd))
 
-    progress_msg = "Linting with {linter}: {srcs}".format(
-        linter=linter_name,
-        srcs=" ".join([src_f.path for src_f in src_files])
-    )
+    # TODO(Jonathon): Reinstate this
+#    cmd = "{linter_exe} {config} {srcs} > {out}".format(
+#        linter_exe = linter_exe,
+#        config = configuration,
+#        srcs = " ".join([
+#            shell.quote("{}/{}".format(repo_root, src_f.path)) for
+#            src_f in src_files
+#        ]),
+#        out = shell.quote(out.path),
+#    )
+#    debug("Running: \"{}\"".format(cmd))
+#
+#    progress_msg = "Linting with {linter}: {srcs}".format(
+#        linter=linter_name,
+#        srcs=" ".join([src_f.path for src_f in src_files])
+#    )
 
     ctx.actions.run_shell(
         outputs = [out],
         inputs = src_files,
-        command = cmd,
-        mnemonic = "Lint",
+        command = copy_cmd,
+        mnemonic = "Copy",
         use_default_shell_env = True,
-        progress_message = progress_msg,
-        execution_requirements = {
-            "no-sandbox": "1",
-            "no-cache": "1",
-            "no-remote": "1",
-        }
+#        progress_message = progress_msg,
+#        execution_requirements = {
+#            "no-sandbox": "1",
+#            "no-cache": "1",
+#            "no-remote": "1",
+#        }
     )
 
+    print(out.path)
     return [
         DefaultInfo(files = depset([out])),
         OutputGroupInfo(
@@ -139,7 +151,7 @@ def linting_aspect_generator(
         name,
         linters,
 ):
-    linters_map = { lang: None for lang in SUPPORTED_LANGUAGES }
+    linters_map = { lang: "@linting_rules//:no-op" for lang in SUPPORTED_LANGUAGES }
     for l in linters:
         linter_label = Label(l)
         # TODO(Jonathon): Don't allow double-writing to single language (ie. duplicate linters)
