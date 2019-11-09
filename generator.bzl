@@ -35,12 +35,24 @@ def _select_linter(ctx):
     debug("No linter for rule kind: {}".format(kind))
     return None
 
+
+def _gather_srcs(src_lst):
+    return [
+        file for src in src_lst
+        for file in src.files.to_list()
+    ]
+
 def _lint_workspace_aspect_impl(target, ctx):
+    no_source_files = (
+        not hasattr(ctx.rule.attr, 'srcs') and
+        not hasattr(ctx.rule.attr, 'src')
+    )
+
     if (
         # Ignore targets in external repos
         ctx.label.workspace_name or
         # Ignore targets without source files
-        not hasattr(ctx.rule.attr, 'srcs')
+        no_source_files
     ):
         return  []
 
@@ -51,10 +63,12 @@ def _lint_workspace_aspect_impl(target, ctx):
     repo_root = ctx.var["repo_root"]
 
     out = ctx.actions.declare_file("%s.lint_report" % ctx.rule.attr.name)
-    src_files = [
-        file for src in ctx.rule.attr.srcs
-        for file in src.files.to_list()
-    ]
+
+    src_files = []
+    if hasattr(ctx.rule.attr, 'srcs'):
+        src_files += _gather_srcs(ctx.rule.attr.srcs)
+    if hasattr(ctx.rule.attr, 'src'):
+        src_files += _gather_srcs([ctx.rule.attr.src])
 
     linter_exe = linter[LinterInfo].executable_path
     linter_name = linter_exe.split("/")[-1]
@@ -92,6 +106,7 @@ def _lint_workspace_aspect_impl(target, ctx):
         ]),
         out = shell.quote(out.path),
     )
+    debug("Running: \"{}\"".format(cmd))
 
     progress_msg = "Linting with {linter}: {srcs}".format(
         linter=linter_name,
