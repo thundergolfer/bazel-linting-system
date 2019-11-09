@@ -19,5 +19,6 @@ linter(
 linter(
     name = "jsonnet",
     executable_path = "/usr/local/bin/jsonnetfmt",
+    config_str = "--string-style d --comment-style s",
     visibility = ["//visibility:public"],
 )

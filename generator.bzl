@@ -60,6 +60,7 @@ def _lint_workspace_aspect_impl(target, ctx):
     linter_name = linter_exe.split("/")[-1]
     linter_config_opt = linter[LinterInfo].config_option
     linter_config = linter[LinterInfo].config
+    linter_config_str = linter[LinterInfo].config_str
 
     if not both_or_neither(linter_config, linter_config_opt):
         fail_msg = (
@@ -68,12 +69,16 @@ def _lint_workspace_aspect_impl(target, ctx):
         )
         fail(msg=fail_msg)
 
+    if linter_config_str and linter_config:
+        fail(msg="Don't both specify a config file and raw string config")
 
     if linter_config:
         configuration = "{} {}".format(
             linter_config_opt,
             shell.quote(linter_config.path),
         )
+    elif linter_config_str:
+        configuration = linter_config_str
     else:
         configuration = ""
 
