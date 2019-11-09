@@ -13,6 +13,7 @@ linter(
 linter(
     name = "golang",
     executable_path = "/usr/local/bin/gofmt",
+    config_str = "-w",
     visibility = ["//visibility:public"],
 )
 
