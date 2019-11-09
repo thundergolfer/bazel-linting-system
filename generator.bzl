@@ -19,6 +19,11 @@ def debug(msg):
         print(msg)
 
 
+def both_or_neither(l, r):
+    return (l and r) or (not l and not r)
+
+
+
 def _select_linter(ctx):
     kind = ctx.rule.kind
     if kind in ["py_library", "py_binary", "py_test"]:
@@ -52,17 +57,39 @@ def _lint_workspace_aspect_impl(target, ctx):
     ]
 
     linter_exe = linter[LinterInfo].executable_path
-    cmd = "{linter_exe} {srcs} > {out}".format(
+    linter_name = linter_exe.split("/")[-1]
+    linter_config_opt = linter[LinterInfo].config_option
+    linter_config = linter[LinterInfo].config
+
+    if not both_or_neither(linter_config, linter_config_opt):
+        fail_msg = (
+            "When specifying linter configuration for {},".format(linter_name) +
+            "both 'config_option' and 'config' must be specified."
+        )
+        fail(msg=fail_msg)
+
+
+    if linter_config:
+        configuration = "{} {}".format(
+            linter_config_opt,
+            shell.quote(linter_config.path),
+        )
+    else:
+        configuration = ""
+
+
+    cmd = "{linter_exe} {config} {srcs} > {out}".format(
         linter_exe = linter_exe,
-        out = shell.quote(out.path),
+        config = configuration,
         srcs = " ".join([
             shell.quote("{}/{}".format(repo_root, src_f.path)) for
             src_f in src_files
         ]),
+        out = shell.quote(out.path),
     )
 
     progress_msg = "Linting with {linter}: {srcs}".format(
-        linter=linter_exe.split("/")[-1],
+        linter=linter_name,
         srcs=" ".join([src_f.path for src_f in src_files])
     )
 
