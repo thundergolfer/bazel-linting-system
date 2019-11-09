@@ -8,6 +8,7 @@
     served: 'Straight Up',
   },
   Cosmopolitan: {
+    # This comment should change to '//' style
     ingredients: [
       { kind: 'Vodka', qty: 2 },
       { kind: 'Triple Sec', qty: 0.5 },
