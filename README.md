@@ -4,7 +4,10 @@
 
 ## Usage
 
-Example usage with [`thundergolfer/the-one-true-bazel-monorepo`](https://github.com/thundergolfer/the-one-true-bazel-monorepo):
+An example Bazel workspace exists in [`examples`](/examples), with a `lint.sh` that runs the registered linters against 
+all source code within the workspace.
+
+Below is further explanation of the constituents of this system.
 
 #### Setup
 
@@ -38,6 +41,9 @@ linter(
 
 `linter` targets define a path to the linter executable and optionally a config file for that linter.
 
+> ⚠️ The **`name`** field in the `linter` rule must exactly match one of the supported languages. The list of supported languages is 
+> shown at the top of [`generator.bzl`](generator.bzl).
+
 Run with: 
 
 ```
@@ -46,3 +52,5 @@ bazel build //fruit_sorting/... \
     --output_groups=report \
     --define=repo_root=$(git rev-parse --show-toplevel)
 ```
+
+Usually you'd want to wrap up the above in a simple script named something like `lint.sh`.
