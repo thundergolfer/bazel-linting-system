@@ -11,6 +11,8 @@
 #
 # ci-lint-check.sh demonstrates an appropriate CI usage of bazel-linting-rules.
 
+REPO_ROOT="$(git rev-parse --show-toplevel)/examples"
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -18,4 +20,4 @@ set -o pipefail
 bazel build //... \
     --aspects //tools/linting:aspect.bzl%lint \
     --output_groups=report \
-    --define=repo_root=$(git rev-parse --show-toplevel)
+    --define=repo_root="${REPO_ROOT}"

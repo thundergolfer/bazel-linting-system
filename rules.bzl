@@ -1,16 +1,9 @@
-
-SUPPORTED_LANGUAGES = [
-    "PYTHON",
-    "GOLANG",
-]
-
 LinterInfo = provider(
     fields = {
         "executable_path": "Absolute path to the linter that will run",
         "config": "Configuration file for linter",
     }
 )
-
 
 
 def _linter_impl(ctx):
@@ -22,17 +15,11 @@ def _linter_impl(ctx):
     ]
 
 
-
 linter = rule(
     implementation = _linter_impl,
     attrs = {
 # TODO  "executable": attr.label,
         "executable_path": attr.string(),
         "config": attr.label(allow_single_file=True),
-        "language": attr.string(
-            doc='TODO',
-            mandatory=True,
-            values=SUPPORTED_LANGUAGES
-        )
     },
 )

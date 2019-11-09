@@ -1,6 +1,12 @@
 load("@bazel_skylib//lib:shell.bzl", "shell")
-load("//:rules.bzl", "LinterInfo", "SUPPORTED_LANGUAGES")
+load("//:rules.bzl", "LinterInfo")
 
+
+SUPPORTED_LANGUAGES = [
+    "python",
+    "golang",
+    "jsonnet",
+]
 
 # Aspects that accept parameters cannot be called on the command line.
 # As I want to call the linter aspect on the command line I can't pass parameters.
@@ -17,8 +23,10 @@ def _select_linter(ctx):
     kind = ctx.rule.kind
     if kind in ["py_library", "py_binary", "py_test"]:
         return ctx.attr._python_linter
-    elif kind in ["go_library", "go_library", "go_test"]:
+    elif kind in ["go_library", "go_binary", "go_test"]:
         return ctx.attr._golang_linter
+    elif kind in ["jsonnet_library", "jsonnet_to_json"]:
+        return ctx.attr._jsonnet_linter
     debug("No linter for rule kind: {}".format(kind))
     return None
 
@@ -53,13 +61,18 @@ def _lint_workspace_aspect_impl(target, ctx):
         ]),
     )
 
+    progress_msg = "Linting with {linter}: {srcs}".format(
+        linter=linter_exe.split("/")[-1],
+        srcs=" ".join([src_f.path for src_f in src_files])
+    )
+
     ctx.actions.run_shell(
         outputs = [out],
         inputs = src_files,
         command = cmd,
         mnemonic = "Lint",
         use_default_shell_env = True,
-        progress_message = "Linting with black: {srcs}".format(srcs=" ".join([src_f.path for src_f in src_files])),
+        progress_message = progress_msg,
         execution_requirements = {
             "no-sandbox": "1",
         }
@@ -79,18 +92,25 @@ def linting_aspect_generator(
 ):
     linters_map = { lang: None for lang in SUPPORTED_LANGUAGES }
     for l in linters:
-        # TODO(Jonathon): Don't allow double-writing to single language (ie. dupes)
-        linters_map[l.language] = l
+        linter_label = Label(l)
+        # TODO(Jonathon): Don't allow double-writing to single language (ie. duplicate linters)
+        if linter_label.name not in SUPPORTED_LANGUAGES:
+            err_msg = "Linter label names must match exactly a support language. Supported: {}".format(SUPPORTED_LANGUAGES)
+            fail(err_msg)
+        linters_map[linter_label.name] = linter_label
 
     return aspect(
         implementation = _lint_workspace_aspect_impl,
         attr_aspects = [],
         attrs = {
             '_python_linter' : attr.label(
-                default = linters_map["PYTHON"],
+                default = linters_map["python"],
             ),
             '_golang_linter' : attr.label(
-                default = linters_map["GOLANG"],
+                default = linters_map["golang"],
+            ),
+            '_jsonnet_linter' : attr.label(
+                default = linters_map["jsonnet"],
             ),
         }
     )
