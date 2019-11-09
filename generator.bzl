@@ -122,6 +122,8 @@ def _lint_workspace_aspect_impl(target, ctx):
         progress_message = progress_msg,
         execution_requirements = {
             "no-sandbox": "1",
+            "no-cache": "1",
+            "no-remote": "1",
         }
     )
 
@@ -159,5 +161,5 @@ def linting_aspect_generator(
             '_jsonnet_linter' : attr.label(
                 default = linters_map["jsonnet"],
             ),
-        }
+        },
     )
