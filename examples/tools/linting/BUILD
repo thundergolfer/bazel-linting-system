@@ -24,5 +24,6 @@ linter(
 linter(
     name = "ruby",
     executable = "@rubocop//:exe",
-    config_str = "--auto-correct",
+#    executable_path = "/usr/local/lib/ruby/gems/2.6.0/bin/rubocop",
+    config_str = "--auto-correct --cache false --fail-level F",
 )

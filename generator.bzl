@@ -92,8 +92,7 @@ def _lint_workspace_aspect_impl(target, ctx):
 
     report_out = ctx.actions.declare_file("%s.lint_report" % ctx.rule.attr.name)
 
-    print(linter[LinterInfo].executable)
-    linter_exe = linter[LinterInfo].executable_path
+    linter_exe = linter[LinterInfo].executable_path or linter[LinterInfo].executable.path
 
     linter_name = linter_exe.split("/")[-1]
     linter_config_opt = linter[LinterInfo].config_option
@@ -123,6 +122,8 @@ def _lint_workspace_aspect_impl(target, ctx):
     linter_inputs = src_files
     if linter_config:
         linter_inputs.append(linter_config)
+    if linter[LinterInfo].executable:
+        linter_inputs.append(linter[LinterInfo].executable)
 
     linter_template_expanded_exe = ctx.actions.declare_file(
         "%s_linter_exe" % ctx.rule.attr.name

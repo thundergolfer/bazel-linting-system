@@ -29,9 +29,10 @@ linter = rule(
             doc="TODO(Jonathon)"
         ),
         "executable": attr.label(
-            allow_single_file=True,
+            executable=True,
+            cfg="host",
             doc="TODO(Jonathon)",
-        )
+        ),
         "config": attr.label(
             allow_single_file=True,
             doc="TODO(Jonathon)"
