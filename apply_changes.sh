@@ -16,6 +16,9 @@ main() {
   local package
   local name
   local workspace_genfiles_root
+  local linted_files_dir
+  local files_to_overwrite
+  local repo_relative_filepath
 
   workspace_genfiles_root="$(bazel info bazel-genfiles)"
 
@@ -34,10 +37,17 @@ main() {
       package=${pair[0]}
       name=${pair[1]}
 
-      echo "${package}"
-      echo "${name}"
-
-      find "${workspace_genfiles_root}/${package}/__linting_rules/" -name "*.linted" 2> /dev/null
+      linted_files_dir="${workspace_genfiles_root}/${package}/__linting_rules/${name}"
+      if [[ -d "${linted_files_dir}" ]];
+      then
+          # shellcheck disable=SC2207
+          files_to_overwrite=($(find "${linted_files_dir}" -type f ))
+          for f in "${files_to_overwrite[@]}"; do
+            repo_relative_filepath=${f#"${linted_files_dir}/"}
+#            echo "would overwrite -> ${repo_relative_filepath}"
+            cp "${f}" "${REPO_ROOT}/${repo_relative_filepath}"
+          done
+      fi
   done
 }
 
