@@ -19,6 +19,4 @@ set -o pipefail
 
 bazel build //... \
     --aspects //tools/linting:aspect.bzl%lint \
-    --output_groups=report \
-    --define=repo_root="${REPO_ROOT}" \
-    --sandbox_debug
+    --output_groups=report
