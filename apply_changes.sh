@@ -39,7 +39,6 @@ main() {
           files_to_overwrite=($(find "${linted_files_dir}" -type f ))
           for f in "${files_to_overwrite[@]}"; do
             repo_relative_filepath=${f#"${linted_files_dir}/"}
-            echo "would overwrite -> ${repo_relative_filepath}"
             cp "${f}" "${repo_root}/${repo_relative_filepath}"
           done
       fi
