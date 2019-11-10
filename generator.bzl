@@ -75,6 +75,23 @@ def _lint_workspace_aspect_impl(target, ctx):
     if hasattr(ctx.rule.attr, 'src'):
         src_files += _gather_srcs([ctx.rule.attr.src])
 
+    # Note: Don't add ctx.label.package to prefix as it is implicitly added
+    prefix = "__linting_rules/" + ctx.label.name
+
+    suffix = "linted"
+    outputs = []
+    for f in src_files:
+        declared_path = "{}/{}.{}".format(prefix, f.path, suffix)
+        print(declared_path)
+        o = ctx.actions.declare_file(declared_path)
+        outputs.append(o)
+
+    pairs = [
+        "{};{}".format(left, right) for left, right in
+        zip([f.path for f in src_files], [o.path for o in outputs])
+    ]
+
+    report_out = ctx.actions.declare_file("%s.lint_report" % ctx.rule.attr.name)
     linter_exe = linter[LinterInfo].executable_path
     linter_name = linter_exe.split("/")[-1]
     linter_config_opt = linter[LinterInfo].config_option
@@ -101,63 +118,49 @@ def _lint_workspace_aspect_impl(target, ctx):
     else:
         configuration = ""
 
-#    prefix = "{}/{}".format(ctx.label.package, ctx.label.name)
-    # Note: Don't add ctx.label.package to prefix as it is implicitly added
-    prefix = "__linting_rules/" + ctx.label.name
+    progress_msg = "Linting with {linter}: {srcs}".format(
+        linter=linter_name,
+        srcs=" ".join([src_f.path for src_f in src_files])
+    )
 
-    suffix = "linted"
-    outputs = []
-    for f in src_files:
-        declared_path = "{}/{}.{}".format(prefix, f.path, suffix)
-        print(declared_path)
-        o = ctx.actions.declare_file(declared_path)
-        outputs.append(o)
+    linter_inputs = src_files
+    if linter_config:
+        linter_inputs.append(linter_config)
 
-    pairs = [
-        "{};{}".format(left, right) for left, right in
-        zip([f.path for f in src_files], [o.path for o in outputs])
-    ]
-
-    print(pairs)
+    linter_template_expanded_exe = ctx.actions.declare_file(
+        "%s_linter_exe" % ctx.rule.attr.name
+    )
+    ctx.actions.expand_template(
+        template = ctx.file._template,
+        output = linter_template_expanded_exe,
+        substitutions = {
+            "{LINTER_EXE}": linter_exe,
+            "{LINTER_EXE_CONFIG}": configuration,
+            "{LINTER_SRCS}": " ".join([
+                shell.quote(o.path) for
+                o in outputs
+            ]),
+            "{REPORT}": shell.quote(report_out.path),
+        },
+        is_executable = True,
+    )
 
     ctx.actions.run(
-        outputs = outputs,
-        inputs = src_files,
-        executable = ctx.executable._mirror_sources,
+        outputs = outputs + [report_out],
+        inputs = linter_inputs,
+        executable = linter_template_expanded_exe,
         arguments = [
             suffix,
             "{}/{}".format(ctx.label.package, prefix)
         ] + pairs,
-        mnemonic = "Copy",
+        mnemonic = "MirrorAndLint",
         use_default_shell_env = True,
     )
 
-#    copy_cmd = "cp {src} {out}".format(
-#        src = shell.quote(src_files[0].path),
-#        out = shell.quote(out.path),
-#    )
-
-    # TODO(Jonathon): Reinstate this
-#    cmd = "{linter_exe} {config} {srcs} > {out}".format(
-#        linter_exe = linter_exe,
-#        config = configuration,
-#        srcs = " ".join([
-#            shell.quote("{}/{}".format(repo_root, src_f.path)) for
-#            src_f in src_files
-#        ]),
-#        out = shell.quote(out.path),
-#    )
-#    debug("Running: \"{}\"".format(cmd))
-#
-#    progress_msg = "Linting with {linter}: {srcs}".format(
-#        linter=linter_name,
-#        srcs=" ".join([src_f.path for src_f in src_files])
-#    )
-
     return [
-        DefaultInfo(files = depset(outputs)),
+        DefaultInfo(files = depset(outputs + [report_out])),
         OutputGroupInfo(
-            report = depset(outputs),
+            report = depset(outputs + [report_out]),
         )
     ]
 
@@ -179,10 +182,9 @@ def linting_aspect_generator(
         implementation = _lint_workspace_aspect_impl,
         attr_aspects = [],
         attrs = {
-            '_mirror_sources' : attr.label(
-                default = Label('@linting_rules//:mirror_sources'),
-                executable = True,
-                cfg = "host"
+            '_template' : attr.label(
+                default = Label('@linting_rules//:lint.sh.TEMPLATE'),
+                allow_single_file = True,
             ),
             # LINTERS
             '_python_linter' : attr.label(

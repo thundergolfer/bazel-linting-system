@@ -11,3 +11,5 @@ sh_binary(
     srcs = ["mirror_sources.sh"],
     visibility = ["//visibility:public"],
 )
+
+exports_files(["lint.sh.TEMPLATE"])
