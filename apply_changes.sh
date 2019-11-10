@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#set -o errexit
+set -o errexit
 set -o nounset
 set -o pipefail
 
@@ -22,15 +22,12 @@ main() {
 
   workspace_genfiles_root="$(bazel info bazel-genfiles)"
 
-  echo "${REPO_ROOT}"
 
   cd "${REPO_ROOT}"
-
   # shellcheck disable=SC2207
   targets=($(bazel query //...))
 
   for t in "${targets[@]}"; do
-      echo "${t}"
       clean="${t:2}" # remove leading '//'
       # shellcheck disable=SC2206
       pair=(${clean//:/ })
