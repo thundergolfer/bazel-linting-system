@@ -67,8 +67,6 @@ def _lint_workspace_aspect_impl(target, ctx):
     if not linter:
         return []
 
-    repo_root = ctx.var["repo_root"]
-
     src_files = []
     if hasattr(ctx.rule.attr, 'srcs'):
         src_files += _gather_srcs(ctx.rule.attr.srcs)
