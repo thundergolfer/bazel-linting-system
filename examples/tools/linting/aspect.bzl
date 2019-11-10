@@ -4,7 +4,7 @@ lint = linting_aspect_generator(
     name = "lint",
     linters = [
         "@//tools/linting:python",
-#        "@//tools/linting:golang",
-#        "@//tools/linting:jsonnet",
+        "@//tools/linting:golang",
+        "@//tools/linting:jsonnet",
     ]
 )
