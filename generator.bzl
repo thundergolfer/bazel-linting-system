@@ -34,7 +34,8 @@ def _select_linter(ctx):
         linter = ctx.attr._jsonnet_linter
     else:
         linter = None
-    if linter != None and linter.label == "@linting_rules//:no-op":
+
+    if linter != None and str(linter.label) == "@linting_rules//:no-op":
         linter = None
 
     if linter == None:
@@ -68,8 +69,6 @@ def _lint_workspace_aspect_impl(target, ctx):
 
     repo_root = ctx.var["repo_root"]
 
-    out = ctx.actions.declare_file("%s.linted" % ctx.rule.attr.name)
-
     src_files = []
     if hasattr(ctx.rule.attr, 'srcs'):
         src_files += _gather_srcs(ctx.rule.attr.srcs)
@@ -102,10 +101,41 @@ def _lint_workspace_aspect_impl(target, ctx):
     else:
         configuration = ""
 
-    copy_cmd = "cp {src} {out}".format(
-        src = shell.quote(src_files[0].path),
-        out = shell.quote(out.path),
+#    prefix = "{}/{}".format(ctx.label.package, ctx.label.name)
+    # Note: Don't add ctx.label.package to prefix as it is implicitly added
+    prefix = "__linting_rules/" + ctx.label.name
+
+    suffix = "linted"
+    outputs = []
+    for f in src_files:
+        declared_path = "{}/{}.{}".format(prefix, f.path, suffix)
+        print(declared_path)
+        o = ctx.actions.declare_file(declared_path)
+        outputs.append(o)
+
+    pairs = [
+        "{};{}".format(left, right) for left, right in
+        zip([f.path for f in src_files], [o.path for o in outputs])
+    ]
+
+    print(pairs)
+
+    ctx.actions.run(
+        outputs = outputs,
+        inputs = src_files,
+        executable = ctx.executable._mirror_sources,
+        arguments = [
+            suffix,
+            "{}/{}".format(ctx.label.package, prefix)
+        ] + pairs,
+        mnemonic = "Copy",
+        use_default_shell_env = True,
     )
+
+#    copy_cmd = "cp {src} {out}".format(
+#        src = shell.quote(src_files[0].path),
+#        out = shell.quote(out.path),
+#    )
 
     # TODO(Jonathon): Reinstate this
 #    cmd = "{linter_exe} {config} {srcs} > {out}".format(
@@ -124,25 +154,10 @@ def _lint_workspace_aspect_impl(target, ctx):
 #        srcs=" ".join([src_f.path for src_f in src_files])
 #    )
 
-    ctx.actions.run_shell(
-        outputs = [out],
-        inputs = src_files,
-        command = copy_cmd,
-        mnemonic = "Copy",
-        use_default_shell_env = True,
-#        progress_message = progress_msg,
-#        execution_requirements = {
-#            "no-sandbox": "1",
-#            "no-cache": "1",
-#            "no-remote": "1",
-#        }
-    )
-
-    print(out.path)
     return [
-        DefaultInfo(files = depset([out])),
+        DefaultInfo(files = depset(outputs)),
         OutputGroupInfo(
-            report = depset([out]),
+            report = depset(outputs),
         )
     ]
 
@@ -164,6 +179,12 @@ def linting_aspect_generator(
         implementation = _lint_workspace_aspect_impl,
         attr_aspects = [],
         attrs = {
+            '_mirror_sources' : attr.label(
+                default = Label('@linting_rules//:mirror_sources'),
+                executable = True,
+                cfg = "host"
+            ),
+            # LINTERS
             '_python_linter' : attr.label(
                 default = linters_map["python"],
             ),
