@@ -22,4 +22,5 @@ bazel build //... \
     --output_groups=report
 
 bazel run @linting_rules//:apply_changes \
-    --define=repo_root="${REPO_ROOT}"
+    --define=REPO_ROOT="$(git rev-parse --show-toplevel)" \
+    --define=BAZEL_BINDIR="$(bazel info bazel-genfiles)"
