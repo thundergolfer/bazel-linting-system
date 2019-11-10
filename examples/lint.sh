@@ -24,4 +24,4 @@ bazel build //... \
 bazel run @linting_rules//:apply_changes -- \
   "$(git rev-parse --show-toplevel)" \
   "$(bazel info bazel-genfiles)" \
-  "$(bazel query //...)"
+  "$(bazel query //... | tr '\n' ' ')"

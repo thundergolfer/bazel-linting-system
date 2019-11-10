@@ -6,10 +6,6 @@ set -o pipefail
 
 PROG=$(basename "$0")
 
-info() {
-  echo "$(date '+[%Y-%m-%d %H:%M:%S]') ${PROG}: INFO: $*"
-}
-
 main() {
   local clean
   local pair
