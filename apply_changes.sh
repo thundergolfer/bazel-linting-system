@@ -32,8 +32,6 @@ main() {
       package=${pair[0]}
       name=${pair[1]}
 
-#      echo "${t}"
-
       linted_files_dir="${bazel_bindir}/${package}/__linting_rules/${name}"
       if [[ -d "${linted_files_dir}" ]];
       then
