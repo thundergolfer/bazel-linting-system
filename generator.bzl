@@ -115,11 +115,6 @@ def _lint_workspace_aspect_impl(target, ctx):
     else:
         configuration = ""
 
-    progress_msg = "Linting with {linter}: {srcs}".format(
-        linter=linter_name,
-        srcs=" ".join([src_f.path for src_f in src_files])
-    )
-
     linter_inputs = src_files
     if linter_config:
         linter_inputs.append(linter_config)
