@@ -21,6 +21,7 @@ bazel build //... \
     --aspects //tools/linting:aspect.bzl%lint \
     --output_groups=report
 
-bazel run @linting_rules//:apply_changes \
-    --define=REPO_ROOT="$(git rev-parse --show-toplevel)" \
-    --define=BAZEL_BINDIR="$(bazel info bazel-genfiles)"
+bazel run @linting_rules//:apply_changes -- \
+  "$(git rev-parse --show-toplevel)" \
+  "$(bazel info bazel-genfiles)" \
+  "$(bazel query //...)"

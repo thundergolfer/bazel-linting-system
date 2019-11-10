@@ -20,9 +20,12 @@ main() {
   local files_to_overwrite
   local repo_relative_filepath
 
-  cd "${REPO_ROOT}"
+  local repo_root=${1}
+  local bazel_bindir=${2}
+  local targets=${3}
+
+  cd "${repo_root}"
   # shellcheck disable=SC2207
-  targets=($(bazel query //...))
 
   for t in "${targets[@]}"; do
       clean="${t:2}" # remove leading '//'
@@ -31,15 +34,15 @@ main() {
       package=${pair[0]}
       name=${pair[1]}
 
-      linted_files_dir="${BAZEL_BINDIR}/${package}/__linting_rules/${name}"
+      linted_files_dir="${bazel_bindir}/${package}/__linting_rules/${name}"
       if [[ -d "${linted_files_dir}" ]];
       then
           # shellcheck disable=SC2207
           files_to_overwrite=($(find "${linted_files_dir}" -type f ))
           for f in "${files_to_overwrite[@]}"; do
             repo_relative_filepath=${f#"${linted_files_dir}/"}
-#            echo "would overwrite -> ${repo_relative_filepath}"
-            cp "${f}" "${REPO_ROOT}/${repo_relative_filepath}"
+            echo "would overwrite -> ${repo_relative_filepath}"
+            cp "${f}" "${repo_root}/${repo_relative_filepath}"
           done
       fi
   done
