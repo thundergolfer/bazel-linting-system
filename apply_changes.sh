@@ -18,7 +18,9 @@ main() {
 
   local repo_root=${1}
   local bazel_bindir=${2}
-  local targets=${3}
+  local targets
+
+  read -r -a targets <<< "${3}"
 
   cd "${repo_root}"
   # shellcheck disable=SC2207
@@ -29,6 +31,8 @@ main() {
       pair=(${clean//:/ })
       package=${pair[0]}
       name=${pair[1]}
+
+#      echo "${t}"
 
       linted_files_dir="${bazel_bindir}/${package}/__linting_rules/${name}"
       if [[ -d "${linted_files_dir}" ]];

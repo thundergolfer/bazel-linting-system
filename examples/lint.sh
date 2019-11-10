@@ -22,6 +22,6 @@ bazel build //... \
     --output_groups=report
 
 bazel run @linting_rules//:apply_changes -- \
-  "$(git rev-parse --show-toplevel)" \
+  "$(git rev-parse --show-toplevel)/examples" \
   "$(bazel info bazel-genfiles)" \
   "$(bazel query //... | tr '\n' ' ')"
