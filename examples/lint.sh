@@ -20,3 +20,6 @@ set -o pipefail
 bazel build //... \
     --aspects //tools/linting:aspect.bzl%lint \
     --output_groups=report
+
+bazel run @linting_rules//:apply_changes \
+    --define=repo_root="${REPO_ROOT}"
