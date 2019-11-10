@@ -51,3 +51,56 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_to
 go_rules_dependencies()
 
 go_register_toolchains()
+
+#######################################
+# RUBY
+#######################################
+
+git_repository(
+    name = "com_github_yugui_rules_ruby",
+    remote = "https://github.com/yugui/rules_ruby.git",
+    tag = "v0.1.0",
+)
+
+load(
+    "@com_github_yugui_rules_ruby//ruby:deps.bzl",
+    "ruby_register_toolchains",
+    "ruby_rules_dependencies",
+)
+
+ruby_rules_dependencies()
+
+ruby_register_toolchains()
+
+#######################################
+# NIXPKGS
+#######################################
+
+rules_nixpkgs_version = "a169f54bfc48ad3ade9f46acac9fae7d493ad94b"
+
+http_archive(
+    name = "io_tweag_rules_nixpkgs",
+    strip_prefix = "rules_nixpkgs-{version}".format(version = rules_nixpkgs_version),
+    urls = [
+        "https://github.com/tweag/rules_nixpkgs/archive/{version}.tar.gz".format(version = rules_nixpkgs_version),
+    ],
+)
+
+nixpkgs_git_repository(
+    name = "nixpkgs",
+    revision = "94a08f2f8e9773df925639ca52f97f0136ab2cdc",
+    sha256 = "a920c5ae08bec3b4296a0744c51e182192f05fecde08ab21addce736163d25d5",
+)
+
+nixpkgs_package(
+    name = "rubocop",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+filegroup(
+    name = "exe",
+    srcs = ["bin/rubocop"],
+)
+""",
+    nix_file = "//tools/linting/nix:rubocop.nix",
+    repositories = {"nixpkgs": "@nixpkgs//:default.nix"},
+)
