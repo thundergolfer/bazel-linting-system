@@ -21,9 +21,15 @@ linter(
     config_str = "--in-place --string-style d --comment-style s",
 )
 
+RUBY_LINTER_OPTS = " ".join([
+    "--auto-correct", # Need to activate 'in-place' editing mode
+    "--cache false",  # Rubocop's caching does not work with Bazel, and isn't necessary
+    "--fail-level F", # Stop Rubocop exit-code=1
+])
+
 linter(
     name = "ruby",
     executable = "@rubocop//:exe",
 #    executable_path = "/usr/local/lib/ruby/gems/2.6.0/bin/rubocop",
-    config_str = "--auto-correct --cache false --fail-level F",
+    config_str = RUBY_LINTER_OPTS,
 )
