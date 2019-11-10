@@ -12,7 +12,7 @@ SUPPORTED_LANGUAGES = [
 # As I want to call the linter aspect on the command line I can't pass parameters.
 # Thus, I can't pass a 'debug' parameter to the aspect.
 # So here I make a global to allow switching DEBUG logs on an off
-DEBUG=True
+DEBUG=False
 
 def debug(msg):
     if DEBUG:
