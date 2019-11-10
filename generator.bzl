@@ -78,10 +78,9 @@ def _lint_workspace_aspect_impl(target, ctx):
     # Note: Don't add ctx.label.package to prefix as it is implicitly added
     prefix = "__linting_rules/" + ctx.label.name
 
-    suffix = "linted"
     outputs = []
     for f in src_files:
-        declared_path = "{}/{}.{}".format(prefix, f.path, suffix)
+        declared_path = "{}/{}".format(prefix, f.path)
         print(declared_path)
         o = ctx.actions.declare_file(declared_path)
         outputs.append(o)
@@ -149,10 +148,7 @@ def _lint_workspace_aspect_impl(target, ctx):
         outputs = outputs + [report_out],
         inputs = linter_inputs,
         executable = linter_template_expanded_exe,
-        arguments = [
-            suffix,
-            "{}/{}".format(ctx.label.package, prefix)
-        ] + pairs,
+        arguments = ["{}/{}".format(ctx.label.package, prefix)] + pairs,
         mnemonic = "MirrorAndLint",
         use_default_shell_env = True,
     )
