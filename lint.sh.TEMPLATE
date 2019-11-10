@@ -24,7 +24,7 @@ main() {
   for pair in "${in_out_pairs[@]}"; do
     arr_pair=(${pair//;/ })
 
-    info "Copying ${arr_pair[0]} to ${arr_pair[1]}"
+#    info "Copying ${arr_pair[0]} to ${arr_pair[1]}"
     mkdir -p "$(dirname "${arr_pair[1]}")"
     cp "${arr_pair[0]}" "${arr_pair[1]}"
   done
