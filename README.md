@@ -1,7 +1,7 @@
 # bazel-linting-rules
 
 This is an experimental project with the goals of providing a simple tool for linting source code within a polyglot Bazel repo
-and learning more about aspects. 
+and learning more about aspects. ⚠️ _Currently it relies on being able to configure your linters to modify source 'in-place'. Thankfully most linters can do this.  
 
 See [`DESIGN.md`](DESIGN.md) for some discussion of the pros/cons of this project. 
 
@@ -37,8 +37,8 @@ package(default_visibility = ['//visibility:public'])
 linter(
     name = "python",
     executable_path = "/usr/local/bin/black",
-    config = "TODO(Jonathon): Allow passing config file",
-    visibility = ["//visibility:public"]
+    config = ":configuration/pyproject.toml",
+    config_option = "--config",
 )
 ```
 
@@ -49,11 +49,16 @@ linter(
 
 Run with: 
 
-```
-bazel build //fruit_sorting/... \
+```shell script
+bazel build //... \
     --aspects //tools/linting:aspect.bzl%lint \
-    --output_groups=report \
-    --define=repo_root=$(git rev-parse --show-toplevel)
+    --output_groups=report
+
+bazel run @linting_rules//:apply_changes -- \
+  "$(git rev-parse --show-toplevel)/examples" \
+  "$(bazel info bazel-genfiles)" \
+  "$(bazel query //... | tr '\n' ' ')"
+
 ```
 
 Usually you'd want to wrap up the above in a simple script named something like `lint.sh`.
