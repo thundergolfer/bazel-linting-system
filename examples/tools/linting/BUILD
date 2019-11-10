@@ -27,6 +27,7 @@ RUBY_LINTER_OPTS = " ".join([
     "--fail-level F", # Stop Rubocop exit-code=1
 ])
 
+# TODO(Jonathon): Add a Rubocop configuration file
 linter(
     name = "ruby",
     executable = "@rubocop//:exe",
