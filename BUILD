@@ -7,8 +7,8 @@ linter(
 )
 
 sh_binary(
-    name = "mirror_sources",
-    srcs = ["mirror_sources.sh"],
+    name = "apply_changes",
+    srcs = ["apply_changes.sh"],
     visibility = ["//visibility:public"],
 )
 
