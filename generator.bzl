@@ -6,6 +6,7 @@ SUPPORTED_LANGUAGES = [
     "python",
     "golang",
     "jsonnet",
+    "ruby",
 ]
 
 # Aspects that accept parameters cannot be called on the command line.
@@ -32,6 +33,8 @@ def _select_linter(ctx):
         linter =  ctx.attr._golang_linter
     elif kind in ["jsonnet_library", "jsonnet_to_json"]:
         linter = ctx.attr._jsonnet_linter
+    elif kind in ["ruby_library", "ruby_binary", "ruby_test"]:
+            linter = ctx.attr._ruby_linter
     else:
         linter = None
 
@@ -88,7 +91,10 @@ def _lint_workspace_aspect_impl(target, ctx):
     ]
 
     report_out = ctx.actions.declare_file("%s.lint_report" % ctx.rule.attr.name)
+
+    print(linter[LinterInfo].executable)
     linter_exe = linter[LinterInfo].executable_path
+
     linter_name = linter_exe.split("/")[-1]
     linter_config_opt = linter[LinterInfo].config_option
     linter_config = linter[LinterInfo].config
@@ -183,6 +189,9 @@ def linting_aspect_generator(
             ),
             '_jsonnet_linter' : attr.label(
                 default = linters_map["jsonnet"],
+            ),
+            '_ruby_linter' : attr.label(
+                default = linters_map["ruby"],
             ),
         },
     )

@@ -20,3 +20,9 @@ linter(
     executable_path = "/usr/local/bin/jsonnetfmt",
     config_str = "--in-place --string-style d --comment-style s",
 )
+
+linter(
+    name = "ruby",
+    executable = "@rubocop//:exe",
+    config_str = "--auto-correct",
+)
