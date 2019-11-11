@@ -1,4 +1,4 @@
-# bazel-linting-rules
+# `bazel-linting-system`
 
 This is an experimental project with the goals of providing a simple tool for linting source code within a polyglot Bazel repo
 and learning more about aspects. ⚠️ _Currently it relies on being able to configure your linters to modify source 'in-place'._ Thankfully most linters can do this.  
