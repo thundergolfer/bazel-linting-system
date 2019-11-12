@@ -38,7 +38,7 @@ def _select_linter(ctx):
     else:
         linter = None
 
-    if linter != None and str(linter.label) == "@linting_rules//:no-op":
+    if linter != None and str(linter.label) == "@linting_system//:no-op":
         linter = None
 
     if linter == None:
@@ -77,7 +77,7 @@ def _lint_workspace_aspect_impl(target, ctx):
         src_files += _gather_srcs([ctx.rule.attr.src])
 
     # Note: Don't add ctx.label.package to prefix as it is implicitly added
-    prefix = "__linting_rules/" + ctx.label.name
+    prefix = "__linting_system/" + ctx.label.name
 
     outputs = []
     for f in src_files:
@@ -164,7 +164,7 @@ def linting_aspect_generator(
         name,
         linters,
 ):
-    linters_map = { lang: "@linting_rules//:no-op" for lang in SUPPORTED_LANGUAGES }
+    linters_map = { lang: "@linting_system//:no-op" for lang in SUPPORTED_LANGUAGES }
     for l in linters:
         linter_label = Label(l)
         # TODO(Jonathon): Don't allow double-writing to single language (ie. duplicate linters)
@@ -178,7 +178,7 @@ def linting_aspect_generator(
         attr_aspects = [],
         attrs = {
             '_template' : attr.label(
-                default = Label('@linting_rules//:lint.sh.TEMPLATE'),
+                default = Label('@linting_system//:lint.sh.TEMPLATE'),
                 allow_single_file = True,
             ),
             # LINTERS

@@ -17,7 +17,7 @@ Below is further explanation of the constituents of this system.
 Create an `aspect.bzl` extension file in a folder called `tools/linting` with the following:
 
 ```python
-load("@linting_rules//:generator.bzl", "linting_aspect_generator")
+load("@linting_system//:generator.bzl", "linting_aspect_generator")
 
 lint = linting_aspect_generator(
     name = "lint",
@@ -30,7 +30,7 @@ lint = linting_aspect_generator(
 `"@//tools/linting:python"` is a label reference to target in a sibling `BUILD` file, for example:
 
 ```python
-load("@linting_rules//:rules.bzl", "linter")
+load("@linting_system//:rules.bzl", "linter")
 
 package(default_visibility = ['//visibility:public'])
 
@@ -54,7 +54,7 @@ bazel build //... \
     --aspects //tools/linting:aspect.bzl%lint \
     --output_groups=report
 
-bazel run @linting_rules//:apply_changes -- \
+bazel run @linting_system//:apply_changes -- \
   "$(git rev-parse --show-toplevel)" \
   "$(bazel info bazel-genfiles)" \
   "$(bazel query //... | tr '\n' ' ')"

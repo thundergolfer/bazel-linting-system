@@ -32,7 +32,7 @@ main() {
       package=${pair[0]}
       name=${pair[1]}
 
-      linted_files_dir="${bazel_bindir}/${package}/__linting_rules/${name}"
+      linted_files_dir="${bazel_bindir}/${package}/__linting_system/${name}"
       if [[ -d "${linted_files_dir}" ]];
       then
           # shellcheck disable=SC2207

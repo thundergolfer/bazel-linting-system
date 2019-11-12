@@ -1,1 +1,1 @@
-workspace(name = "bazel_linting_rules")
+workspace(name = "bazel_linting_system")

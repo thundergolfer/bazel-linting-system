@@ -1,4 +1,4 @@
-load("@linting_rules//:rules.bzl", "linter")
+load("@linting_system//:rules.bzl", "linter")
 
 package(default_visibility = ['//visibility:public'])
 
