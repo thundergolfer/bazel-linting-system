@@ -29,10 +29,16 @@ main() {
       clean="${t:2}" # remove leading '//'
       # shellcheck disable=SC2206
       pair=(${clean//:/ })
-      package=${pair[0]}
-      name=${pair[1]}
 
-      linted_files_dir="${bazel_bindir}/${package}/__linting_system/${name}"
+      if [ ${#pair[@]} -eq 1 ]; then
+        package=""
+        name=${pair[0]}
+      else
+        package="${pair[0]}/"
+        name=${pair[1]}
+      fi
+
+      linted_files_dir="${bazel_bindir}/${package}__linting_system/${name}"
       if [[ -d "${linted_files_dir}" ]];
       then
           # shellcheck disable=SC2207
