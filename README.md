@@ -14,6 +14,17 @@ Below is further explanation of the constituents of this system.
 
 #### Setup
 
+Add the following to your WORKSPACE file: 
+
+```python
+http_archive(
+    name = "linting_system",
+    strip_prefix = "bazel-linting-system-master",
+    sha256 = "77851784bc85258d7a4ec76dafa0dc65adae2dab46fb97ad153eb5f4d9db4ab1",
+    url = "https://github.com/thundergolfer/bazel-linting-system/archive/master.zip",
+)
+```
+
 Create an `aspect.bzl` extension file in a folder called `tools/linting` with the following:
 
 ```python
