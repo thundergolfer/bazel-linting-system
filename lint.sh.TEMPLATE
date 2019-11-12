@@ -12,10 +12,8 @@ info() {
 
 main() {
   local destination
-  local files
-  local mirrored_filepath
-  local parts
 
+  # TODO(Jonathon): Remove. Don't use this anymore
   destination="${1}"
   shift 1
 
