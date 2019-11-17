@@ -20,7 +20,7 @@ Bazel right now (https://github.com/bazelbuild/bazel/issues/10205)**
 ## Design 2: Hermetic pure-function linter_X(source_code) -> Bazel output source code
 
 By removing the side-effect we can fix the caching problem described
-above but we then we wouldn't have fixed any lint in the source code.
+above but then we wouldn't have fixed any lint in the source code.
 
 So we'd still need a non-hermetic step to change source code. This just
 shouldn't be part of the aspect. It could be like this:
@@ -34,7 +34,7 @@ diff source_code_X/file_y bazel-bin/source_code_X/file_y.linted
 
 OR
 
-cp source_code_X/file_y bazel-bin/source_code_X/file_y.linted
+cp bazel-bin/source_code_X/file_y.linted source_code_X/file_y
 
 
 ```
