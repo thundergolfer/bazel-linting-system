@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="http://www.giphy.com/gifs/em4XXVwBT7ZfmK2vYZ"/>
+</p>
+
 # `bazel-linting-system`
 
 This is an experimental project with the goals of providing a simple tool for linting source code within a polyglot Bazel repo
