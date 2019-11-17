@@ -72,4 +72,11 @@ bazel run @linting_system//:apply_changes -- \
 
 ```
 
-Usually you'd want to wrap up the above in a simple script named something like `lint.sh`.
+Usually you'll want to wrap up the above in a simple script named something like `lint.sh`. 
+
+You can also add the aspect to your `.bazelrc` 🎉: 
+
+```
+build --aspects //tools/linting:aspect.bzl%lint
+build --output_groups=+report
+```
