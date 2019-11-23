@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://media.giphy.com/media/dU5DagftExMdFFWtUo/giphy.gif"/>
+  <img src="https://media.giphy.com/media/hV6TgQmCoxxyItBFHx/giphy.gif"/>
 </p>
 
 # `bazel-linting-system`
