@@ -23,9 +23,9 @@ Add the following to your WORKSPACE file:
 ```python
 http_archive(
     name = "linting_system",
-    strip_prefix = "bazel-linting-system-master",
-    sha256 = "77851784bc85258d7a4ec76dafa0dc65adae2dab46fb97ad153eb5f4d9db4ab1",
-    url = "https://github.com/thundergolfer/bazel-linting-system/archive/master.zip",
+    sha256 = "8da0fedcfd5ebad2ff204caf62abfe5304f32280542128cccc044f56f0d7138d",
+    strip_prefix = "bazel-linting-system-0.2.1",
+    url = "https://github.com/thundergolfer/bazel-linting-system/archive/v0.2.1.zip",
 )
 ```
 
