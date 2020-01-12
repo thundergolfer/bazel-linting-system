@@ -108,3 +108,6 @@ venv.bak/
 
 # BAZEL
 bazel-*
+
+# NodeJS
+**/node_modules/*
