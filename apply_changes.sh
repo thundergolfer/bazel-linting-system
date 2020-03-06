@@ -30,7 +30,9 @@ main() {
       # shellcheck disable=SC2206
       pair=(${clean//:/ })
 
-      if [ ${#pair[@]} -eq 1 ]; then
+      if [ ${#pair[@]} -eq 0 ]; then
+        continue
+      elif [ ${#pair[@]} -eq 1 ]; then
         package=""
         name=${pair[0]}
       else
