@@ -147,7 +147,7 @@ def _lint_workspace_aspect_impl(target, ctx):
         outputs = outputs + [report_out],
         inputs = linter_inputs,
         executable = linter_template_expanded_exe,
-        arguments = ["{}/{}".format(ctx.label.package, prefix)] + pairs,
+        arguments = pairs,
         mnemonic = "MirrorAndLint",
         use_default_shell_env = True,
     )
