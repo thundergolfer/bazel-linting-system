@@ -8,6 +8,12 @@ local_repository(
     path = "../"
 )
 
+load("@linting_system//repositories:repositories.bzl", linting_sys_repositories = "repositories")
+linting_sys_repositories()
+
+load("@linting_system//repositories:go_repositories.bzl", linting_sys_deps = "go_deps")
+linting_sys_deps()
+
 #######################################
 # JSONNET
 #######################################
