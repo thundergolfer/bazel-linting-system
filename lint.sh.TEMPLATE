@@ -11,11 +11,7 @@ info() {
 }
 
 main() {
-  local destination
-
-  # TODO(Jonathon): Remove. Don't use this anymore
-  destination="${1}"
-  shift 1
+  local in_out_pairs
 
   in_out_pairs=("$@")
 
