@@ -55,11 +55,11 @@ func copy(src, dst string) (int64, error) {
 	return nBytes, err
 }
 
-func CleanTargetName(uncleanTarget string) string {
+func cleanTargetName(uncleanTarget string) string {
 	return strings.Replace(uncleanTarget, "//", "", -1)
 }
 
-func OverwriteFilesWithLintedVersions(repoRoot, dir string) error {
+func overwriteFilesWithLintedVersions(repoRoot, dir string) error {
 	var files []string
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -83,8 +83,8 @@ func OverwriteFilesWithLintedVersions(repoRoot, dir string) error {
 	return nil
 }
 
-func ParseTargetName(t string) (*target, error) {
-	cleanTarget := CleanTargetName(t)
+func parseTargetName(t string) (*target, error) {
+	cleanTarget := cleanTargetName(t)
 	parts := strings.Split(cleanTarget, ":")
 	if len(parts) == 1 {
 		return &target{
@@ -101,8 +101,8 @@ func ParseTargetName(t string) (*target, error) {
 	return nil, err
 }
 
-func ApplyLintedChanges(logger SimpleLog, repoRoot, genfilesRoot, target string) error {
-	parsedTarget, err := ParseTargetName(target)
+func applyLintedChanges(logger SimpleLog, repoRoot, genfilesRoot, target string) error {
+	parsedTarget, err := parseTargetName(target)
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func ApplyLintedChanges(logger SimpleLog, repoRoot, genfilesRoot, target string)
 			return err
 		}
 	} else if fileInfo.IsDir() {
-		err = OverwriteFilesWithLintedVersions(repoRoot, lintedFilesDir)
+		err = overwriteFilesWithLintedVersions(repoRoot, lintedFilesDir)
 		if err != nil {
 			return err
 		}
@@ -151,7 +151,7 @@ func main() {
 	targets := strings.Split(targetsGroup, " ")
 
 	for _, target := range targets {
-		err := ApplyLintedChanges(logger, repoRoot, genfilesRoot, target)
+		err := applyLintedChanges(logger, repoRoot, genfilesRoot, target)
 		if err != nil {
 			fmt.Printf("Error on target '%s': %s", target, err)
 			os.Exit(1)
