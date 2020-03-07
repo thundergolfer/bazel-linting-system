@@ -1,5 +1,5 @@
 import React from "react";
-import Snackbar from "examples/typescript/src/lib/Snackbar/Snackbar";
+import Snackbar from "examples/typescript/src/components/Snackbar/Snackbar";
 
 interface ISnackbarDemoState {
   showSnackbar: boolean;

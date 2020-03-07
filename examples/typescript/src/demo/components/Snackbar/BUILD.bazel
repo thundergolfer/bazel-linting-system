@@ -8,7 +8,7 @@ ts_library(
         "Snackbar.tsx",
     ],
     deps = [
-        "//typescript/src/lib/Snackbar:snackbar",
+        "//typescript/src/components/Snackbar:snackbar",
         "@npm//@types",
         "@npm//react",
         "@npm//react-dom",
