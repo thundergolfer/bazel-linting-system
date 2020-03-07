@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -13,17 +15,64 @@ type target struct {
 	name string
 }
 
+func copy(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
+
 func CleanTargetName(uncleanTarget string) string {
 	return strings.Replace(uncleanTarget, "//", "", -1)
 }
 
-func OverwriteFilesWithLintedVersions(dir string) error {
-	// TODO(Jonathon): Actually implement the copy over
+func OverwriteFilesWithLintedVersions(repoRoot, dir string) error {
+	var files []string
+
+	fmt.Println("In overwrite stage...")
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if !(info.IsDir()) {
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		repoRelativeFilepath := strings.Replace(file, dir, "", 1)
+		absoluteFilepath := path.Join(repoRoot, repoRelativeFilepath)
+		_, err := copy(file, absoluteFilepath)
+		if err != nil {
+			panic(err)
+		}
+
+	}
 	return nil
 }
 
 func ParseTargetName(t string) *target {
-	parts := strings.Split(t, ":")
+	cleanTarget := CleanTargetName(t)
+	parts := strings.Split(cleanTarget, ":")
 	if len(parts) == 1 {
 		return &target{
 			bzlPackage: "",
@@ -35,7 +84,7 @@ func ParseTargetName(t string) *target {
 			name: parts[1],
 		}
 	}
-	fmt.Fprintf(os.Stderr,"Received invalid label: %s", t)
+	fmt.Fprintf(os.Stderr, "Received invalid label: %s", t)
 	os.Exit(1)
 	return nil
 }
@@ -50,44 +99,36 @@ func main() {
 
 	repoRoot := args[1]
 	genfilesRoot := args[2]
-	targets := args[3:]
-
-	fmt.Println("Hello World")
-	fmt.Printf("repoRoot: %s\n", repoRoot)
-	fmt.Printf("genfilesRoot: %s\n", genfilesRoot)
-	fmt.Printf("targets: %s\n", targets)
+	targetsGroup := args[3]
+	targets := strings.Split(targetsGroup, " ")
 
 	for _, target := range targets {
-		cleanTarget := CleanTargetName(target)
-		fmt.Printf("clean target: %s\n", cleanTarget)
-		parsedTarget := ParseTargetName(cleanTarget)
-
-		fmt.Printf("parsed: %s\n", parsedTarget)
+		parsedTarget := ParseTargetName(target)
 
 		lintedFilesDir := path.Join(
 			genfilesRoot,
-			fmt.Sprintf("%s__linting_system", parsedTarget.bzlPackage),
+			parsedTarget.bzlPackage,
+			"__linting_system",
 			parsedTarget.name)
 
 		fileInfo, err := os.Stat(lintedFilesDir)
-		if err != nil{
-			fmt.Fprintf(
-				os.Stderr,
-				"The directory '%s' does not exist but was expected to",
-				lintedFilesDir)
-			os.Exit(1)
+		if err != nil {
+			if os.IsNotExist(err) {
+				_, _ = fmt.Fprintf(
+					os.Stderr,
+					"The directory '%s' does not exist so no linted file for target '%s/%s'\n",
+					lintedFilesDir,
+					parsedTarget.bzlPackage,
+					parsedTarget.name,
+				)
+				continue
+			} else {
+				// TODO(Jonathon): Don't panic
+				panic(err)
+			}
+		} else if fileInfo.IsDir() {
+			_ = OverwriteFilesWithLintedVersions(repoRoot, lintedFilesDir)
 		}
-
-		if fileInfo.IsDir() {
-			_ = OverwriteFilesWithLintedVersions(lintedFilesDir)
-		} else {
-			fmt.Fprintf(
-				os.Stderr,
-				"The path '%s' was expected to be a dir not a file",
-				lintedFilesDir)
-			os.Exit(1)
-		}
-
 	}
 }
 
