@@ -6,10 +6,9 @@ linter(
     visibility = ["//visibility:public"],
 )
 
-sh_binary(
+alias(
     name = "apply_changes",
-    srcs = ["apply_changes.sh"],
-    visibility = ["//visibility:public"],
+    actual = "//apply_changes",
 )
 
 exports_files(["lint.sh.TEMPLATE"])
