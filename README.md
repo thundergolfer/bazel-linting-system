@@ -23,10 +23,16 @@ Add the following to your WORKSPACE file:
 ```python
 http_archive(
     name = "linting_system",
-    sha256 = "8da0fedcfd5ebad2ff204caf62abfe5304f32280542128cccc044f56f0d7138d",
-    strip_prefix = "bazel-linting-system-0.2.1",
-    url = "https://github.com/thundergolfer/bazel-linting-system/archive/v0.2.1.zip",
+    sha256 = "",
+    strip_prefix = "bazel-linting-system-0.3.0",
+    url = "https://github.com/thundergolfer/bazel-linting-system/archive/v0.3.0.zip",
 )
+
+load("@linting_system//repositories:repositories.bzl", linting_sys_repositories = "repositories")
+linting_sys_repositories()
+
+load("@linting_system//repositories:go_repositories.bzl", linting_sys_deps = "go_deps")
+linting_sys_deps()
 ```
 
 Create an `aspect.bzl` extension file in a folder called `tools/linting` with the following:
