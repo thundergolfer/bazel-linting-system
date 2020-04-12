@@ -24,8 +24,8 @@ Add the following to your WORKSPACE file:
 http_archive(
     name = "linting_system",
     sha256 = "",
-    strip_prefix = "bazel-linting-system-0.3.0",
-    url = "https://github.com/thundergolfer/bazel-linting-system/archive/v0.3.0.zip",
+    strip_prefix = "bazel-linting-system-0.4.0",
+    url = "https://github.com/thundergolfer/bazel-linting-system/archive/v0.4.0.zip",
 )
 
 load("@linting_system//repositories:repositories.bzl", linting_sys_repositories = "repositories")
