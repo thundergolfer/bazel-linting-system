@@ -1,7 +1,7 @@
 LinterInfo = provider(
     fields = {
         "executable_path": "Absolute path to the linter that will run",
-        "executable": "An executable File the run the linter",
+        "executable": "Label for an executable linter",
         "config": "Configuration file for linter",
         "config_option": "The option used by the linter to pass a path to a configuration file",
         "config_str": "Raw string configuration options to be passed to linter",
@@ -24,24 +24,24 @@ def _linter_impl(ctx):
 linter = rule(
     implementation = _linter_impl,
     attrs = {
-# TODO  "executable": attr.label,
         "executable_path": attr.string(
-            doc="TODO(Jonathon)"
+            doc="Absolute path to the linter that will run",
+            mandatory=False,
         ),
         "executable": attr.label(
             executable=True,
             cfg="host",
-            doc="TODO(Jonathon)",
+            doc="Label for an executable linter",
         ),
         "config": attr.label(
             allow_single_file=True,
-            doc="TODO(Jonathon)"
+            doc="Configuration file for linter",
         ),
         "config_option": attr.string(
-            doc="TODO(Jonathon)"
+            doc="The option used by the linter to pass a path to a configuration file",
         ),
         "config_str": attr.string(
-            doc="TODO(Jonathon)"
+            doc="Raw string configuration options to be passed to linter",
         )
     },
 )
