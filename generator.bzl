@@ -7,6 +7,7 @@ SUPPORTED_LANGUAGES = [
     "golang",
     "jsonnet",
     "ruby",
+    "rust",
 ]
 
 # Aspects that accept parameters cannot be called on the command line.
@@ -35,14 +36,17 @@ def _select_linter(ctx):
         linter = ctx.attr._jsonnet_linter
     elif kind in ["ruby_library", "ruby_binary", "ruby_test"]:
             linter = ctx.attr._ruby_linter
+    elif kind in ["rust_library", "rust_binary", "rust_test"]:
+            linter = ctx.attr._rust_linter
     else:
-        linter = None
-
-    if linter != None and str(linter.label) == "@linting_system//:no-op":
         linter = None
 
     if linter == None:
         debug("No linter for rule kind: {}".format(kind))
+
+    if linter != None and str(linter.label) == "@linting_system//:no-op":
+        linter = None
+
     return linter
 
 
@@ -193,6 +197,9 @@ def linting_aspect_generator(
             ),
             '_ruby_linter' : attr.label(
                 default = linters_map["ruby"],
+            ),
+            '_rust_linter' : attr.label(
+                default = linters_map["rust"],
             ),
         },
     )
