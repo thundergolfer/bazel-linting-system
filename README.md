@@ -77,8 +77,7 @@ bazel build //... \
 
 bazel run @linting_system//apply_changes -- \
   "$(git rev-parse --show-toplevel)" \
-  "$(bazel info bazel-genfiles)" \
-  "$(bazel query //... | tr '\n' ' ')"
+  "$(bazel info bazel-genfiles)"
 
 ```
 

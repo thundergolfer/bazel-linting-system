@@ -3,32 +3,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 )
-
-type SimpleLog struct {
-	DebugEnabled bool
-}
-
-func (m *SimpleLog) Debug(args ...interface{}) {
-	if m.DebugEnabled {
-		log.Println(args...)
-	}
-}
-
-func (m *SimpleLog) Info(args ...interface{}) {
-	log.Println(args...)
-}
-
-
-type target struct {
-	bzlPackage string
-	name string
-}
 
 func copy(src, dst string) (int64, error) {
 	sourceFileStat, err := os.Stat(src)
@@ -55,10 +36,6 @@ func copy(src, dst string) (int64, error) {
 	return nBytes, err
 }
 
-func cleanTargetName(uncleanTarget string) string {
-	return strings.Replace(uncleanTarget, "//", "", -1)
-}
-
 func overwriteFilesWithLintedVersions(repoRoot, dir string) error {
 	var files []string
 
@@ -83,53 +60,19 @@ func overwriteFilesWithLintedVersions(repoRoot, dir string) error {
 	return nil
 }
 
-func parseTargetName(t string) (*target, error) {
-	cleanTarget := cleanTargetName(t)
-	parts := strings.Split(cleanTarget, ":")
-	if len(parts) == 1 {
-		return &target{
-			bzlPackage: "",
-			name: parts[0],
-		}, nil
-	} else if len(parts) == 2 {
-		return &target{
-			bzlPackage: parts[0],
-			name: parts[1],
-		}, nil
-	}
-	err := fmt.Errorf("received invalid label: %s", t)
-	return nil, err
-}
-
-func applyLintedChanges(logger SimpleLog, repoRoot, genfilesRoot, target string) error {
-	parsedTarget, err := parseTargetName(target)
+// Each linted package target within a bazel-linting-system directory space will have its own subdirectory.
+// Eg:
+// bazel-bin/api_client/__linting_system/api_client (for //api_client:api_client)
+// bazel-bin/api_client/__linting_system/repl (for //api_client:repl)
+func processLintSystemPackageRoot(repoRoot, lintSystemPkgRoot string) error {
+	children, err := ioutil.ReadDir(lintSystemPkgRoot)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	lintedFilesDir := path.Join(
-		genfilesRoot,
-		parsedTarget.bzlPackage,
-		"__linting_system",
-		parsedTarget.name)
-
-	fileInfo, err := os.Stat(lintedFilesDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			logger.Debug(fmt.Sprintf(
-				"The directory '%s' does not exist so no linted file for target '%s/%s'\n",
-				lintedFilesDir,
-				parsedTarget.bzlPackage,
-				parsedTarget.name,
-			))
-			return nil
-		} else {
-			return err
-		}
-	} else if fileInfo.IsDir() {
-		err = overwriteFilesWithLintedVersions(repoRoot, lintedFilesDir)
-		if err != nil {
-			return err
+	for _, f := range children {
+		if f.IsDir() {
+			err = overwriteFilesWithLintedVersions(repoRoot, path.Join(lintSystemPkgRoot, f.Name()))
 		}
 	}
 	return nil
@@ -138,22 +81,27 @@ func applyLintedChanges(logger SimpleLog, repoRoot, genfilesRoot, target string)
 func main() {
 	args := os.Args
 
-	logger := SimpleLog{DebugEnabled: false}
-
-	if len(args) < 4 {
-		fmt.Println("usage: <bazel-repo-root> $(bazel info bazel-genfiles) [targets ...]")
+	if len(args) < 3 {
+		fmt.Println("usage: <bazel-repo-root> $(bazel info bazel-genfiles)")
 		os.Exit(1)
 	}
 
 	repoRoot := args[1]
 	genfilesRoot := args[2]
-	targetsGroup := args[3]
-	targets := strings.Split(targetsGroup, " ")
 
-	for _, target := range targets {
-		err := applyLintedChanges(logger, repoRoot, genfilesRoot, target)
+	// All folders of linted files can be found by globbing Bazel's genfiles root for
+	// the (what should be) unique directory name of the bazel-linting-system.
+	lintSysPkgRootPattern := genfilesRoot + "/**/__linting_system"
+	matches, err := filepath.Glob(lintSysPkgRootPattern)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	for _, lintSysPkgRoot := range matches {
+		err := processLintSystemPackageRoot(repoRoot, lintSysPkgRoot)
 		if err != nil {
-			fmt.Printf("Error on target '%s': %s", target, err)
+			fmt.Printf("Error processing pkg '%s': %s", lintSysPkgRoot, err)
 			os.Exit(1)
 		}
 	}
