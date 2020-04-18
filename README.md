@@ -5,9 +5,17 @@
 # `bazel-linting-system`
 
 This is an experimental project with the goals of providing a simple tool for linting source code within a polyglot Bazel repo
-and learning more about aspects. ⚠️ _Currently it relies on being able to configure your linters to modify source 'in-place'._ Thankfully most linters can do this.  
+and learning more about aspects. 
 
-See [`DESIGN.md`](DESIGN.md) for some discussion of the pros/cons of this project. 
+### Will this work with linting tool `X`?
+
+This project was designed with linters like [`black`](https://github.com/psf/black) and [`gofmt`](https://golang.org/cmd/gofmt/) in mind. Given their behaviour, they're perhaps more accurately called _formatters_, but to me formatters are a subclass of linters. 
+
+If a linting tool restricts itself to only doing evaluation using your source code files, without needing access to any other information like dependencies or compiler-configuration then it will fit nicely into this project. I think of this project's model linter as a pure function from a source code file to a linted source code file: `f(source_code: str) -> str`.
+
+Now this restriction does allow for things beyond formatting, for example you can check for unused variables, unused imports, or missing return values. But some powerful static analysis tools are outside of project scope, like [`mypy`](https://github.com/thundergolfer/bazel-mypy-integration).
+
+⚠️ _Currently linters also must be able to modify source 'in-place'._ Thankfully most linters can do this.  
 
 ## Usage
 
