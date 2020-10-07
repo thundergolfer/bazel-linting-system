@@ -1,3 +1,5 @@
+# Changed 2020 by Zenseact AB
+
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("//:rules.bzl", "LinterInfo")
 
@@ -8,6 +10,7 @@ SUPPORTED_LANGUAGES = [
     "jsonnet",
     "ruby",
     "rust",
+    "cc",
 ]
 
 # Aspects that accept parameters cannot be called on the command line.
@@ -19,10 +22,6 @@ DEBUG=False
 def debug(msg):
     if DEBUG:
         print(msg)
-
-
-def both_or_neither(l, r):
-    return (l and r) or (not l and not r)
 
 
 
@@ -38,6 +37,8 @@ def _select_linter(ctx):
             linter = ctx.attr._ruby_linter
     elif kind in ["rust_library", "rust_binary", "rust_test"]:
             linter = ctx.attr._rust_linter
+    elif kind in ["cc_library", "cc_binary", "cc_test"]:
+        linter =  ctx.attr._cc_linter
     else:
         linter = None
 
@@ -58,6 +59,7 @@ def _gather_srcs(src_lst):
 
 def _lint_workspace_aspect_impl(target, ctx):
     no_source_files = (
+        not hasattr(ctx.rule.attr, 'hdrs') and
         not hasattr(ctx.rule.attr, 'srcs') and
         not hasattr(ctx.rule.attr, 'src')
     )
@@ -75,6 +77,8 @@ def _lint_workspace_aspect_impl(target, ctx):
         return []
 
     src_files = []
+    if hasattr(ctx.rule.attr, 'hdrs'):
+        src_files += _gather_srcs(ctx.rule.attr.hdrs)
     if hasattr(ctx.rule.attr, 'srcs'):
         src_files += _gather_srcs(ctx.rule.attr.srcs)
     if hasattr(ctx.rule.attr, 'src'):
@@ -96,24 +100,25 @@ def _lint_workspace_aspect_impl(target, ctx):
 
     report_out = ctx.actions.declare_file("%s.lint_report" % ctx.rule.attr.name)
 
-    linter_exe = linter[LinterInfo].executable_path or linter[LinterInfo].executable.path
+    linter_exe = linter[LinterInfo].executable_path or \
+                 linter[LinterInfo].executable[DefaultInfo].files_to_run.executable.path
 
     linter_name = linter_exe.split("/")[-1]
     linter_config_opt = linter[LinterInfo].config_option
     linter_config = linter[LinterInfo].config
     linter_config_str = linter[LinterInfo].config_str
 
-    if not both_or_neither(linter_config, linter_config_opt):
+    if linter_config_opt and not linter_config:
         fail_msg = (
-            "When specifying linter configuration for {},".format(linter_name) +
-            "both 'config_option' and 'config' must be specified."
+            "When specifying linter configuration for {}, ".format(linter_name) +
+            "'config' must be specified if 'config_option' is set."
         )
         fail(msg=fail_msg)
 
-    if linter_config_str and linter_config:
-        fail(msg="Don't both specify a config file and raw string config")
+    if linter_config_str and linter_config_opt:
+        fail(msg="Don't both specify a config file option and raw string config")
 
-    if linter_config:
+    if linter_config_opt:
         configuration = "{} {}".format(
             linter_config_opt,
             shell.quote(linter_config.path),
@@ -126,8 +131,6 @@ def _lint_workspace_aspect_impl(target, ctx):
     linter_inputs = src_files
     if linter_config:
         linter_inputs.append(linter_config)
-    if linter[LinterInfo].executable:
-        linter_inputs.append(linter[LinterInfo].executable)
 
     linter_template_expanded_exe = ctx.actions.declare_file(
         "%s_linter_exe" % ctx.rule.attr.name
@@ -147,13 +150,17 @@ def _lint_workspace_aspect_impl(target, ctx):
         is_executable = True,
     )
 
+    tool_inputs, tool_input_manifests = ctx.resolve_tools(tools = [linter[LinterInfo].executable])
+
     ctx.actions.run(
         outputs = outputs + [report_out],
         inputs = linter_inputs,
         executable = linter_template_expanded_exe,
+        tools = tool_inputs,
         arguments = pairs,
         mnemonic = "MirrorAndLint",
         use_default_shell_env = True,
+        input_manifests = tool_input_manifests,
     )
 
     return [
@@ -200,6 +207,9 @@ def linting_aspect_generator(
             ),
             '_rust_linter' : attr.label(
                 default = linters_map["rust"],
+            ),
+            '_cc_linter' : attr.label(
+                default = linters_map["cc"],
             ),
         },
     )

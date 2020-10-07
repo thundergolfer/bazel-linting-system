@@ -1,3 +1,5 @@
+# Changed 2020 by Zenseact AB
+
 LinterInfo = provider(
     fields = {
         "executable_path": "Absolute path to the linter that will run",
@@ -13,7 +15,7 @@ def _linter_impl(ctx):
     return [
         LinterInfo(
             executable_path=ctx.attr.executable_path,
-            executable=ctx.executable.executable,
+            executable=ctx.attr.executable,
             config=ctx.file.config,
             config_option=ctx.attr.config_option,
             config_str=ctx.attr.config_str,
