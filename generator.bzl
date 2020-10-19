@@ -105,7 +105,10 @@ def _lint_workspace_aspect_impl(target, ctx):
 
     linter_name = linter_exe.split("/")[-1]
     linter_config_opt = linter[LinterInfo].config_option
-    linter_config = linter[LinterInfo].config
+    if linter[LinterInfo].config != None:
+        linter_config = linter[LinterInfo].config[DefaultInfo].files.to_list()
+    else:
+        linter_config = None
     linter_config_str = linter[LinterInfo].config_str
 
     if linter_config_opt and not linter_config:
@@ -119,9 +122,11 @@ def _lint_workspace_aspect_impl(target, ctx):
         fail(msg="Don't both specify a config file option and raw string config")
 
     if linter_config_opt:
-        configuration = "{} {}".format(
-            linter_config_opt,
-            shell.quote(linter_config.path),
+        configuration = " ".join(
+            [
+                "{} {}".format(linter_config_opt, shell.quote(config.path))
+                for config in linter_config
+            ],
         )
     elif linter_config_str:
         configuration = linter_config_str
@@ -130,7 +135,7 @@ def _lint_workspace_aspect_impl(target, ctx):
 
     linter_inputs = src_files
     if linter_config:
-        linter_inputs.append(linter_config)
+        linter_inputs.extend(linter_config)
 
     linter_template_expanded_exe = ctx.actions.declare_file(
         "%s_linter_exe" % ctx.rule.attr.name

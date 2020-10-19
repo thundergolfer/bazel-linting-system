@@ -16,7 +16,7 @@ def _linter_impl(ctx):
         LinterInfo(
             executable_path=ctx.attr.executable_path,
             executable=ctx.attr.executable,
-            config=ctx.file.config,
+            config=ctx.attr.config,
             config_option=ctx.attr.config_option,
             config_str=ctx.attr.config_str,
         )
@@ -36,7 +36,7 @@ linter = rule(
             doc="Label for an executable linter",
         ),
         "config": attr.label(
-            allow_single_file=True,
+            allow_files=True,
             doc="Configuration file for linter",
         ),
         "config_option": attr.string(
