@@ -1,3 +1,5 @@
+// Changed 2020 by Zenseact AB
+
 package main
 
 import (
@@ -78,6 +80,23 @@ func processLintSystemPackageRoot(repoRoot, lintSystemPkgRoot string) error {
 	return nil
 }
 
+func findLintSystemDirs(repoRoot string) ([]string, error) {
+	var dirs []string
+	err := filepath.Walk(repoRoot, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			if info.Name() == "__linting_system" {
+				dirs = append(dirs, path)
+				return filepath.SkipDir
+			} else {
+				return nil
+			}
+		} else {
+			return filepath.SkipDir
+		}
+	})
+	return dirs, err
+}
+
 func main() {
 	args := os.Args
 
@@ -89,10 +108,9 @@ func main() {
 	repoRoot := args[1]
 	genfilesRoot := args[2]
 
-	// All folders of linted files can be found by globbing Bazel's genfiles root for
+	// All folders of linted files can be found by searching Bazel's genfiles root for
 	// the (what should be) unique directory name of the bazel-linting-system.
-	lintSysPkgRootPattern := genfilesRoot + "/**/__linting_system"
-	matches, err := filepath.Glob(lintSysPkgRootPattern)
+	matches, err := findLintSystemDirs(genfilesRoot)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
