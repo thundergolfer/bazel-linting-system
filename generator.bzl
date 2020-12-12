@@ -155,7 +155,12 @@ def _lint_workspace_aspect_impl(target, ctx):
         is_executable = True,
     )
 
-    tool_inputs, tool_input_manifests = ctx.resolve_tools(tools = [linter[LinterInfo].executable])
+    # If the linter exe is configured with `executable_path`, eg. `executable_path = "/usr/local/bin/black"`,
+    # do not attempt to resolve `executable` as it will be `None` not a `Target` object.
+    tool_inputs = []
+    tool_input_manifests = None
+    if linter[LinterInfo].executable:
+        tool_inputs, tool_input_manifests = ctx.resolve_tools(tools = [linter[LinterInfo].executable])
 
     ctx.actions.run(
         outputs = outputs + [report_out],
