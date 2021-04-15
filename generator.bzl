@@ -87,6 +87,10 @@ def _lint_workspace_aspect_impl(target, ctx):
     if hasattr(ctx.rule.attr, 'src'):
         src_files += _gather_srcs([ctx.rule.attr.src])
 
+    # src_files may be empty at this point
+    if (len(src_files) == 0):
+        return []
+
     # Note: Don't add ctx.label.package to prefix as it is implicitly added
     prefix = "__linting_system/" + ctx.label.name
 
