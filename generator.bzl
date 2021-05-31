@@ -11,6 +11,7 @@ SUPPORTED_LANGUAGES = [
     "ruby",
     "rust",
     "cc",
+    "java"
 ]
 
 # Aspects that accept parameters cannot be called on the command line.
@@ -39,6 +40,8 @@ def _select_linter(ctx):
             linter = ctx.attr._rust_linter
     elif kind in ["cc_library", "cc_binary", "cc_test"]:
         linter =  ctx.attr._cc_linter
+    elif kind in ["java_library", "java_binary", "java_test"]:
+        linter =  ctx.attr._java_linter
     else:
         linter = None
 
@@ -83,6 +86,10 @@ def _lint_workspace_aspect_impl(target, ctx):
         src_files += _gather_srcs(ctx.rule.attr.srcs)
     if hasattr(ctx.rule.attr, 'src'):
         src_files += _gather_srcs([ctx.rule.attr.src])
+
+    # src_files may be empty at this point
+    if (len(src_files) == 0):
+        return []
 
     # Note: Don't add ctx.label.package to prefix as it is implicitly added
     prefix = "__linting_system/" + ctx.label.name
@@ -220,6 +227,9 @@ def linting_aspect_generator(
             ),
             '_cc_linter' : attr.label(
                 default = linters_map["cc"],
+            ),
+            '_java_linter' : attr.label(
+                default = linters_map["java"],
             ),
         },
     )
