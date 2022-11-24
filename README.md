@@ -1,3 +1,12 @@
+<h1 align="center">🪦 Archived 🪦</h1>
+
+<p align="center">
+  <h3 align="center">Check out <a href="">aspect-build/<strong>bazel-super-formatter</strong></a> instead.</h3>
+</p>
+
+
+----
+
 <p align="center">
   <img src="https://media.giphy.com/media/hV6TgQmCoxxyItBFHx/giphy.gif"/>
 </p>
