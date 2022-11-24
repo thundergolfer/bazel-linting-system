@@ -1,7 +1,7 @@
 <h1 align="center">🪦 Archived 🪦</h1>
 
 <p align="center">
-  <h3 align="center">Check out <a href="">aspect-build/<strong>bazel-super-formatter</strong></a> instead.</h3>
+  <h3 align="center">Check out <a href="https://github.com/aspect-build/bazel-super-formatter">aspect-build/<strong>bazel-super-formatter</strong></a> instead.</h3>
 </p>
 
 
